@@ -3,7 +3,7 @@ from threading import Thread
 import random
 
 # server's IP address
-SERVER_HOST = "192.168.56.106"
+SERVER_HOST = "192.168.56.105"
 SERVER_PORT = 8888 # port we want to use
 separator_token = "<SEP>" # we will use this to separate the client name & message
 
@@ -20,6 +20,8 @@ s.bind((SERVER_HOST, SERVER_PORT))
 # listen for upcoming connections
 s.listen(5)
 intro = "tes test test" #needs changing
+print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
+print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
 menu = "1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Wait\n\n"
 death_count = 0
@@ -71,7 +73,6 @@ def stoa(msg):
 
 """
 def adventure(cs):
-
     menu(cs)
     while True:
         try:
@@ -205,7 +206,7 @@ def w_room():
     while player != 3:
     #while True:
         client_socket, client_address = s.accept()
-        print(f"[+] {client_address} connected.")
+        print(f"[+] {client_address} connected.\n---------------------------------------------------")
         # add the new connected client to connected sockets
         all_cs.add(client_socket)
         if player == 1:
