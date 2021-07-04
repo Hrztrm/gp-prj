@@ -118,6 +118,7 @@ class adv:
         self.intel = intel
         self.dead = 0
         self.dmg_taken = 1
+        self.insight = 0
         if (cl == "Mage"):
             self.spell = ["Magic Bolt", "Mind Shock", "Heal"]
         elif (cl == "Warrior" or cl == "Archer"):
@@ -155,6 +156,9 @@ class adv:
         self.intel = 0
         self.dead = 1
 
+    def analyze(self):
+        self.insight = 1
+
     def deal_dmg(self):
         if self.cl == "Warrior":
             dmg = self.stren
@@ -187,11 +191,11 @@ def story(part):
 def warp(player):
     if player == 0:
         sto1(pl1, pl[player].p_stat())
-        sto1(pl1, "\n1. Strength\n2. Agility\n3. Intelligence\n5. Back")
+        sto1(pl1, "\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
         return pl1.recv(1024).decode()
     elif player == 1:
         sto1(pl2, pl[player].p_stat())
-        sto1(pl2, "\n1. Strength\n2. Agility\n3. Intelligence\n5. Back")
+        sto1(pl2, "\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
         return pl2.recv(1024).decode()
 
 def w_room():
@@ -224,29 +228,42 @@ def w_room():
         #t.start()
 
 def select(play):
-    s = f"1. Player 1: {pl[0].cond()}\n2. Player 2: {pl[1].cond()}\n3. {enemy1.typ}: {enemy1.cond()}\n\n5. Back"
-    print(s)
+    norm = f"1. Player 1: {pl[0].cond()}\n2. Player 2: {pl[1].cond()}\n3. {enemy1.typ}: {enemy1.cond()}\n\n5. Back"
+    hide = f"1. Player 1: {pl[0].cond()}\n2. Player 2: {pl[1].cond()}\n3. Hidden: {enemy1.cond()}\n\n5. Back"
     if play == 0:
-        pl1.send(s.encode())
+        if pl[play].insight == 0:
+            sto1(pl1, hide)
+        else:
+            sto1(pl1, norm)
         return pl1.recv(1024).decode()
     elif play == 1:
-        pl2.send(s.encode())
+        if pl[play].insight == 0:
+            sto1(pl2, hide)
+        else:
+            sto1(pl2, norm)
         return pl2.recv(1024).decode()
+
+def hidden(hid ,player):
+    norm = f"\nPlayer 1: {pl[0].cond()}\nPlayer 2: {pl[1].cond()}\n{enemy1.typ}: {enemy1.cond()}\n\n"
+    hide = f"\nPlayer 1: {pl[0].cond()}\nPlayer 2: {pl[1].cond()}\nHidden: {enemy1.cond()}\n\n"
+    if hid == 0:
+        sto1(player, hide)
+    elif hid == 1:
+        sto1(player, norm)
 
 def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
     while True:
-        s = f"\nPlayer 1: {pl[0].cond()}\nPlayer 2: {pl[1].cond()}\n{enemy1.typ}: {enemy1.cond()}\n\n"
         act = "0"
         while act != "1" and act != "2" and act != "3" and act != "4" and act != "5":
             if play == 0:
                 #sto1(pl2, "Waiting for Player 1 to finish turn")
-                sto1(pl1, s)
+                hidden(pll[play].insight, pl1)
                 sto1(pl1, pl[play].p_stat() + "\n\n")
                 sto1(pl1, menu)
                 act = pl1.recv(1024).decode()
             elif play == 1:
                 #sto1(pl1, "Waiting for Player 2 to finish turn")
-                sto1(pl2, s)
+                hidden(pl[play].insight, pl2)
                 sto1(pl2, pl[play].p_stat() + "\n\n")
                 sto1(pl2, menu)
                 act = pl2.recv(1024).decode()
@@ -283,6 +300,7 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
                 stat = pl[1].p_stat()
             elif targ == "5": #Back
                 continue
+            pl[play].analyze()
             if play == 0:
                 sto1(pl1, stat)
             elif play == 1:
@@ -308,11 +326,11 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
             if i == 0:
                 #sto1(pl1, "died")
                 #sto1(pl1, "no hint yet")
-                sto1(pl2, f"Player 1 has while fighting {enemy1.typ}\n")
+                sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
             elif i == 1:
                 sto1(pl2, "died")
                 sto1(pl2, "no hint yet")
-                #sto1(pl1, f"Player 2 has while fighting {enemy1.typ}'n")
+                #sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
         i += 1
     if death_count == 2:
         endprog()
@@ -376,10 +394,15 @@ def battle():
             i += 1
         if death_count == 2:
             endprog()
+    i = 0
+    for check in pl:
+        pl[i].insight = 0
 
-def trap():
-    sto1(pl2, "Trap")
+def sac_room():
+    print("Sacrifical Room")
 
+def rec_room():
+    print("Recovery Room")
 
 def endprog():
     global death_count
@@ -394,16 +417,13 @@ print(pl2)
 
 #story("start")
 while n_enc <= 5:
-    enc = random.randint(1,2)
-    print(enc)
     n_enc += 1
-    enc = 2 #delete after done
-    if enc == 1:
+    if n_enc == 3:
+        sac_room()
+    elif n_enc == 5:
+        rec_room()
+    else:
         battle()
-    elif enc == 2:
-        trap()
-
-
 # close client sockets
 for cs in all_cs:
     cs.close()
