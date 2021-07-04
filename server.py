@@ -408,7 +408,6 @@ def endprog():
         s.close()
         quit()
 
-def 
 w_room()
 n_enc = 0
 print(pl1)
