@@ -243,6 +243,25 @@ def select(play):
             sto1(pl2, norm)
         return pl2.recv(1024).decode()
 
+def death_check():
+    global death_count
+    i = 0
+    for check in pl:
+        if pl[i].c_hp <= 0 and pl[i].dead == 0:
+            pl[i].death()
+            death_count += 1
+            if i == 0:
+                #sto1(pl1, "died")
+                #sto1(pl1, "no hint yet")
+                sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
+            elif i == 1:
+                sto1(pl2, "died")
+                sto1(pl2, "no hint yet")
+                #sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
+        i += 1
+    if death_count == 2:
+        endprog()
+
 def hidden(hid ,player):
     norm = f"\nPlayer 1: {pl[0].cond()}\nPlayer 2: {pl[1].cond()}\n{enemy1.typ}: {enemy1.cond()}\n\n"
     hide = f"\nPlayer 1: {pl[0].cond()}\nPlayer 2: {pl[1].cond()}\nHidden: {enemy1.cond()}\n\n"
@@ -293,12 +312,16 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
         elif act == "3":
             targ = select(play)
             if targ == "3":
+                print("Analyzing enemy")
                 stat = enemy1.p_stat()
             elif targ == "1":
+                print("Analyzing Player 1")
                 stat = pl[0].p_stat()
             elif targ == "2":
+                print("Analyzing Player 2")
                 stat = pl[1].p_stat()
             elif targ == "5": #Back
+                print("Back from analyzing")
                 continue
             pl[play].analyze()
             if play == 0:
@@ -310,32 +333,16 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
         elif act == "4":
             targ = warp(play)
             if targ == "5":
+                print("Back from Warping")
                 continue
             else:
                 pl[play].warping(targ)
                 break
 
         elif act == "5":
+            print("Wait")
             break
-    global death_count
-    i = 0
-    for check in pl:
-        if pl[i].c_hp <= 0 and pl[i].dead == 0:
-            pl[i].death()
-            death_count += 1
-            if i == 0:
-                #sto1(pl1, "died")
-                #sto1(pl1, "no hint yet")
-                sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
-            elif i == 1:
-                sto1(pl2, "died")
-                sto1(pl2, "no hint yet")
-                #sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
-        i += 1
-    if death_count == 2:
-        endprog()
-    #here will be the magic and def and item part
-
+    death_check()
     print(enemy1.p_stat())
     print("\n")
     print(pl[1].p_stat())
@@ -380,20 +387,8 @@ def battle():
         i = 0
         for check in pl:
             pl[i].dmg_taken = 1 #Reset the defense
-            if pl[i].c_hp <= 0 and pl[i].dead == 0:
-                pl[i].death()
-                death_count += 1
-                if i == 0:
-                    #sto1(pl1, "died")
-                    #sto1(pl1, "no hint yet")
-                    sto1(pl2, f"Player 1 has while fighting {enemy1.typ}\n")
-                elif i == 1:
-                    sto1(pl2, "died")
-                    sto1(pl2, "no hint yet")
-                    #sto1(pl1, f"Player 2 has while fighting {enemy1.typ}'n")
             i += 1
-        if death_count == 2:
-            endprog()
+        death_check()
     i = 0
     for check in pl:
         pl[i].insight = 0
@@ -408,8 +403,12 @@ def endprog():
     global death_count
     if death_count == 2:
         print("Both players has died")
+        for cs in all_cs:
+            cs.close()
+        s.close()
         quit()
 
+def 
 w_room()
 n_enc = 0
 print(pl1)
@@ -424,6 +423,8 @@ while n_enc <= 5:
         rec_room()
     else:
         battle()
+
+
 # close client sockets
 for cs in all_cs:
     cs.close()
