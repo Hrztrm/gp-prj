@@ -21,7 +21,7 @@ s.bind((SERVER_HOST, SERVER_PORT))
 s.listen(5)
 intro = "tes test test" #needs changing
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-menu = "1. Attack\n2. Defend\n3. Magic\n4. Item\n5. Wait\n\n"
+menu = "1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Wait\n\n"
 death_count = 0
 class enemy:
     def __init__(self, typ, stren, agil, intel):
@@ -61,20 +61,6 @@ class enemy:
         elif self.typ == "Goblin":
             dmg = self.intel
         return dmg
-
-"""
-def battle(cs, c, player):
-    menu(cs)
-    target_list = ["1. Player 1", "2. Player 2", "3. Enemy"]
-    while True:
-        try:
-            command = cs.recv(1024).decode()
-        except Exception as e:
-            print(f"Error: {e}")
-            all_cs.remove(cs)
-        if command == "1":
-            cs.send(target_list.encode())
-"""
 
 def sto1(cs, msg):
     cs.send(msg.encode())
@@ -131,6 +117,7 @@ class adv:
         self.agil = agil
         self.intel = intel
         self.dead = 0
+        self.dmg_taken = 1
         if (cl == "Mage"):
             self.spell = ["Magic Bolt", "Mind Shock", "Heal"]
         elif (cl == "Warrior" or cl == "Archer"):
@@ -140,7 +127,8 @@ class adv:
         return f"Health {self.c_hp}/{self.m_hp}"
 
     def take_dmg(self, dmg):
-        self.c_hp = self.c_hp - dmg
+        self.c_hp = self.c_hp - (dmg * self.dmg_taken)
+        self.dmg_taken = 1
 
     def p_stat(self):
         return f"Class: {self.cl}\nHealth: {self.c_hp}/{self.m_hp}\nStrength: {self.stren}\nAgility: {self.agil}\nIntelligence: {self.intel}"
@@ -176,14 +164,35 @@ class adv:
             dmg = self.intel
         return dmg
 
-    def buff(self):
-        print("hi")
+    def warping(self, targ):
+        if targ == "1":
+            print("Warping strength")
+            self.stren -= 2
+        elif targ == "2":
+            print("Warping Agility")
+            self.agil -= 2
+        elif targ == "3":
+            print("Warping Intelligence")
+            self.intel -= 2
+
+    def defend(self):
+        self.dmg_taken = 0.5
 
 def story(part):
     if part == "start":
         for cs in all_cs:
             cs.send(intro.encode())
 
+
+def warp(player):
+    if player == 0:
+        sto1(pl1, pl[player].p_stat())
+        sto1(pl1, "\n1. Strength\n2. Agility\n3. Intelligence\n5. Back")
+        return pl1.recv(1024).decode()
+    elif player == 1:
+        sto1(pl2, pl[player].p_stat())
+        sto1(pl2, "\n1. Strength\n2. Agility\n3. Intelligence\n5. Back")
+        return pl2.recv(1024).decode()
 
 def w_room():
     global pl1
@@ -224,66 +233,89 @@ def select(play):
         pl2.send(s.encode())
         return pl2.recv(1024).decode()
 
-def turn(play):
+def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
     while True:
+        s = f"\nPlayer 1: {pl[0].cond()}\nPlayer 2: {pl[1].cond()}\n{enemy1.typ}: {enemy1.cond()}\n\n"
         act = "0"
-        while act != "1" and act != "2" and act != "3" and act != "4":
+        while act != "1" and act != "2" and act != "3" and act != "4" and act != "5":
             if play == 0:
                 #sto1(pl2, "Waiting for Player 1 to finish turn")
+                sto1(pl1, s)
+                sto1(pl1, pl[play].p_stat() + "\n\n")
                 sto1(pl1, menu)
                 act = pl1.recv(1024).decode()
             elif play == 1:
                 #sto1(pl1, "Waiting for Player 2 to finish turn")
+                sto1(pl2, s)
+                sto1(pl2, pl[play].p_stat() + "\n\n")
                 sto1(pl2, menu)
                 act = pl2.recv(1024).decode()
 
         if act == "1":
+            print("Attacking")
             targ = select(play)
             if targ == "3":
+                print(f"Attacking {enemy1.typ}\n")
                 enemy1.take_dmg(pl[play].deal_dmg())
             elif targ == "1":
+                print("Attacking player 1\n")
                 pl[0].take_dmg(pl[play].deal_dmg())
             elif targ == "2":
+                print("Attacking player 2\n")
                 pl[1].take_dmg(pl[play].deal_dmg())
             elif targ == "5": #Back
+                print("Back from Attacking\n")
                 continue
             break
 
         elif act == "2":
-            print("Defending")
+            print("Defending\n")
+            pl[play].defend()
             break
 
         elif act == "3":
-            if play == 0:
-                pl1.send(pl[play].m_list().encode())
-                pl1.send("\n5. Back".encode())
-            elif play == 1:
-                pl2.send(pl[play].m_list().encode())
-                pl2.send("\n5. Back".encode())
-            if play == 0:
-                mgc = pl1.recv(1024).decode()
-                if mgc == "5":
-                    continue
-            elif play == 1:
-                mgc = pl2.recv(1024).decode()
-                if mgc == "5":
-                    continue
             targ = select(play)
-            print("progs")
-            #damage for type spell or stuff
+            if targ == "3":
+                stat = enemy1.p_stat()
+            elif targ == "1":
+                stat = pl[0].p_stat()
+            elif targ == "2":
+                stat = pl[1].p_stat()
+            elif targ == "5": #Back
+                continue
+            if play == 0:
+                sto1(pl1, stat)
+            elif play == 1:
+                sto1(pl2, stat)
+            break
+        
+        elif act == "4":
+            targ = warp(play)
+            if targ == "5":
+                continue
+            else:
+                pl[play].warping(targ)
+                break
+
+        elif act == "5":
+            break
     global death_count
     i = 0
     for check in pl:
-        if pl[i].c_hp <= 0:
+        if pl[i].c_hp <= 0 and pl[i].dead == 0:
             pl[i].death()
             death_count += 1
             if i == 0:
-                sto1(pl1, "died")
-                sto1(pl1, "no hint yet")
+                #sto1(pl1, "died")
+                #sto1(pl1, "no hint yet")
+                sto1(pl2, f"Player 1 has while fighting {enemy1.typ}\n")
             elif i == 1:
                 sto1(pl2, "died")
                 sto1(pl2, "no hint yet")
+                #sto1(pl1, f"Player 2 has while fighting {enemy1.typ}'n")
         i += 1
+    if death_count == 2:
+        endprog()
     #here will be the magic and def and item part
 
     print(enemy1.p_stat())
@@ -292,23 +324,23 @@ def turn(play):
 
 def battle():
     play = 0
-    sto1(pl2, "You have encountered an enemy, prepare for BATTLE.") #Change to stoa
+    sto1(pl2, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
     global enemy1
     global death_count
     enemy1 = enemy(random.choice(l_enemy), random.randint(1,2), random.randint(5,10), random.randint(5,10))
     print(enemy1.p_stat())
-    while enemy1.c_hp > 0:
-        if pl[0].agil >= pl[1].agil:
+    while enemy1.c_hp > 0: #Fight until enemy dies
+        if pl[0].agil >= pl[1].agil: #Player 1 then player 2
             if not pl[0].dead:
                 turn(0)
             if not pl[1].dead:
                 turn(1)
-        elif pl[1].agil > pl[0].agil:
+        elif pl[1].agil > pl[0].agil: #Player 2 then player 1
             if not pl[1].dead:
                 turn(1)
             #if not pl[0].dead:
                 #turn(0)
-        if enemy1.c_hp > 0:
+        if enemy1.c_hp > 0: #Enemy's Turn
             if enemy1.typ == "Goblin":
                 if pl[0].stren >= pl[1].stren and not pl[1].dead:
                     pl[1].take_dmg(enemy1.deal_dmg())
@@ -317,10 +349,10 @@ def battle():
             elif enemy1.typ == "Orc":
                 if pl[0].stren >= pl[1].stren and not pl[0].dead:
                     pl[0].take_dmg(enemy1.deal_dmg())
-                    pl[1].take_dmg(enemy1.deal_dmg() * 0.1)
+                    pl[1].take_dmg(int(enemy1.deal_dmg() * 0.2))
                 else:
                     pl[1].take_dmg(enemy1.deal_dmg())
-                    pl[0].take_dmg(enemy1.deal_dmg() * 0.1)
+                    pl[0].take_dmg(int(enemy1.deal_dmg() * 0.2))
             elif enemy1.typ == "Kobold":
                 hit = random.randint(0,1)
                 pl[hit].take_dmg(enemy1.deal_dmg())
@@ -329,19 +361,31 @@ def battle():
         print(enemy1.p_stat())
         i = 0
         for check in pl:
-            if pl[i].c_hp <= 0:
+            pl[i].dmg_taken = 1 #Reset the defense
+            if pl[i].c_hp <= 0 and pl[i].dead == 0:
                 pl[i].death()
                 death_count += 1
                 if i == 0:
-                    sto1(pl1, "died")
-                    sto1(pl1, "no hint yet")
+                    #sto1(pl1, "died")
+                    #sto1(pl1, "no hint yet")
+                    sto1(pl2, f"Player 1 has while fighting {enemy1.typ}\n")
                 elif i == 1:
                     sto1(pl2, "died")
                     sto1(pl2, "no hint yet")
+                    #sto1(pl1, f"Player 2 has while fighting {enemy1.typ}'n")
             i += 1
+        if death_count == 2:
+            endprog()
 
 def trap():
     sto1(pl2, "Trap")
+
+
+def endprog():
+    global death_count
+    if death_count == 2:
+        print("Both players has died")
+        quit()
 
 w_room()
 n_enc = 0
@@ -353,46 +397,13 @@ while n_enc <= 5:
     enc = random.randint(1,2)
     print(enc)
     n_enc += 1
-    enc = 1
+    enc = 2 #delete after done
     if enc == 1:
         battle()
     elif enc == 2:
         trap()
 
 
-
-
-
-
-
-
-"""
-#This is the before version of Waiting room, should be not relevant now
-while True:
-    # we keep listening for new connections all the time
-    client_socket, client_address = s.accept()
-    print(f"[+] {client_address} connected.")
-    # add the new connected client to connected sockets
-    all_cs.add(client_socket)
-    if player == 1:
-        pl1 = client_socket
-        print("player 1")
-        pl.append(adv("Warrior", 10, 5, 3))
-    elif player == 2:
-        pl2 = client_socket
-        print("player 2")
-        msg = "Player 2 has joined"
-        pl1.send(msg.encode())
-        pl.append(adv("Archer", 10, 5, 3))
-    player+=1
-    
-    # start a new thread that listens for each client's messages
-    t = Thread(target=create_player, args=(client_socket,len(all_cs)))
-    # make the thread daemon so it ends whenever the main thread ends
-    t.daemon = True
-    # start the thread
-    t.start()
-"""
 # close client sockets
 for cs in all_cs:
     cs.close()
