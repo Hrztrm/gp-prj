@@ -3,7 +3,7 @@ from threading import Thread
 import random
 
 # server's IP address
-SERVER_HOST = "192.168.56.105"
+SERVER_HOST = "192.168.56.106"
 SERVER_PORT = 8888 # port we want to use
 separator_token = "<SEP>" # we will use this to separate the client name & message
 
@@ -71,37 +71,6 @@ def stoa(msg):
     for cs in all_cs:
         cs.send(msg.encode())
 
-"""
-def adventure(cs):
-    menu(cs)
-    while True:
-        try:
-            # keep listening for a message from `cs` socket
-            msg = cs.recv(1024).decode()
-            
-        except Exception as e:
-            print(f"[!] Error: {e}")
-            all_cs.remove(cs)
-        # iterate over all connected sockets
-        for client_socket in all_cs:
-            if msg == "stat":
-                client_socket.send(pl[0].p_stat().encode())
-            if msg == "magic":
-                client_socket.send(pl[1].m_list().encode())
-                msg = cs.recv(1024).decode()
-            if msg == "a":
-                client_socket.send(pl[0].p_stat().encode())
-                #if msg == "1":
-                    #Damage definiontn
-                #elif msg == "2":
-                    #dmg
-                #elif msg == "3":
-                    #stuff
-                #elif msg == "5"
-                    #back
-                #    continue
-"""
-
 class adv:
     def __init__(self, cl, stren, agil, intel):
         self.cl = cl
@@ -160,7 +129,7 @@ class adv:
     def analyze(self):
         self.insight = 1
 
-    def deal_dmg(self):
+    def deal_dmg(self): #Dealing damage
         if self.cl == "Warrior":
             dmg = self.stren
         elif self.cl == "Archer":
@@ -169,7 +138,7 @@ class adv:
             dmg = self.intel
         return dmg
 
-    def warping(self, targ):
+    def warping(self, targ): #Minus stat
         if targ == "1":
             print("Warping strength")
             self.stren -= 2
@@ -180,8 +149,21 @@ class adv:
             print("Warping Intelligence")
             self.intel -= 2
 
+    def sac(self):
+        if self.cl == "Warrior":
+            self.stren += 10
+        elif self.cl == "Archer":
+            self.agil += 10
+        elif self.cl == "Mage":
+            self.intel += 10
+
     def defend(self):
         self.dmg_taken = 0.5
+
+    def heal(self, h):
+        self.c_hp += h
+        if self.c_hp > self.m_hp:
+            self.c_hp = self.m_hp
 
 def story(part):
     if part == "start":
@@ -212,6 +194,7 @@ def w_room():
         if player == 1:
             pl1 = client_socket
             print("player 1")
+            sto1(pl1, "Player 1 has entered")
             pl.append(adv("Warrior", 10, 5, 3)) #Should be changed with random class
         elif player == 2:
             pl2 = client_socket
@@ -252,13 +235,13 @@ def death_check():
             pl[i].death()
             death_count += 1
             if i == 0:
-                #sto1(pl1, "died")
-                #sto1(pl1, "no hint yet")
+                sto1(pl1, "died")
+                sto1(pl1, "no hint yet")
                 sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
             elif i == 1:
                 sto1(pl2, "died")
                 sto1(pl2, "no hint yet")
-                #sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
+                sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
         i += 1
     if death_count == 2:
         endprog()
@@ -276,13 +259,13 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
         act = "0"
         while act != "1" and act != "2" and act != "3" and act != "4" and act != "5":
             if play == 0:
-                #sto1(pl2, "Waiting for Player 1 to finish turn")
+                sto1(pl2, "Waiting for Player 1 to finish turn")
                 hidden(pll[play].insight, pl1)
                 sto1(pl1, pl[play].p_stat() + "\n\n")
                 sto1(pl1, menu)
                 act = pl1.recv(1024).decode()
             elif play == 1:
-                #sto1(pl1, "Waiting for Player 2 to finish turn")
+                sto1(pl1, "Waiting for Player 2 to finish turn")
                 hidden(pl[play].insight, pl2)
                 sto1(pl2, pl[play].p_stat() + "\n\n")
                 sto1(pl2, menu)
@@ -343,14 +326,22 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
         elif act == "5":
             print("Wait")
             break
+
     death_check()
+    print("\n")
     print(enemy1.p_stat())
     print("\n")
     print(pl[1].p_stat())
+    print("\n")
+    print(pl[0].p_stat())
+    print("\n")
 
 def battle():
     play = 0
-    sto1(pl2, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
+    if not pl[0].dead:
+        sto1(pl1, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
+    if not pl[1].dead:
+        sto1(pl2, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
     global enemy1
     global death_count
     enemy1 = enemy(random.choice(l_enemy), random.randint(1,2), random.randint(5,10), random.randint(5,10))
@@ -364,8 +355,8 @@ def battle():
         elif pl[1].agil > pl[0].agil: #Player 2 then player 1
             if not pl[1].dead:
                 turn(1)
-            #if not pl[0].dead:
-                #turn(0)
+            if not pl[0].dead:
+                turn(0)
         if enemy1.c_hp > 0: #Enemy's Turn
             if enemy1.typ == "Goblin":
                 if pl[0].stren >= pl[1].stren and not pl[1].dead:
@@ -382,9 +373,13 @@ def battle():
             elif enemy1.typ == "Kobold":
                 hit = random.randint(0,1)
                 pl[hit].take_dmg(enemy1.deal_dmg())
+        print("\n")
         print(pl[0].p_stat())
+        print("\n")
         print(pl[1].p_stat())
+        print("\n")
         print(enemy1.p_stat())
+        print("\n")
         i = 0
         for check in pl:
             pl[i].dmg_taken = 1 #Reset the defense
@@ -396,9 +391,69 @@ def battle():
 
 def sac_room():
     print("Sacrifical Room")
+    if not pl[0].dead:
+        sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+    if not pl[1].dead:
+        sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+    #sto1(pl2, "Sac room. 1 or 2")
+    if not pl[0].dead:
+        com1 = pl1.recv(1024).decode()
+        if com1 == "1":
+            pl[0].sac()
+            pl[1].take_dmg(10)
+            death_check()
+    if not pl[1].dead:
+        com2 = pl2.recv(1024).decode()
+        if com1 == "1":
+            pl[1].sac()
+            pl[0].take_dmg(10)
+            death_check()
 
 def rec_room():
     print("Recovery Room")
+    if not pl[0].dead:
+        sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+    if not pl[1].dead:
+        sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+    #sto1(pl2, "1 singel heal\n2 all heal")
+    if not pl[0].dead:
+        com1 = pl1.recv(1024).decode()
+        if com1 == "1":
+            sto1(pl1, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
+            h1 = pl1.recv(1024).decode()
+            print(f"h1: {h1}")
+        else:
+            com1 = "2"
+    if not pl[1].dead:
+        com2 = pl2.recv(1024).decode()
+        if com2 == "1":
+            sto1(pl2, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
+            h2 = pl2.recv(1024).decode()
+            print(f"h2: {h2}")
+        else:
+            com2 = "2"
+    if pl[0].dead:
+        com1 = com2
+        h1 = h2
+    if pl[1].dead:
+        com2 = com1
+        h2 = h1
+    if com1 == "2" and com2 == "2":
+        pl[0].heal(5)
+        pl[1].heal(5)
+        print("All Heal by 5")
+    elif com1 == com2 and h1 == h2:
+        if h1 == "1":
+            print("Heal player 1 by 10")
+            pl[0].heal(10)
+        elif h1 == "2":
+            print("Heal player 2 by 10")
+            pl[1].heal(10)
+    else:
+        if not pl[0].dead:
+            sto1(pl1, "No help will be given to people with no unison")
+        if not pl[1].dead:
+            sto1(pl2, "No help will be given to people with no unison")
 
 def endprog():
     global death_count
@@ -411,8 +466,6 @@ def endprog():
 
 w_room()
 n_enc = 0
-print(pl1)
-print(pl2)
 
 #story("start")
 while n_enc <= 5:
