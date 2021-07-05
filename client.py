@@ -22,7 +22,7 @@ client_color = random.choice(colors)
 # server's IP address
 # if the server is not on this machine, 
 # put the private (network) IP address (e.g 192.168.1.2)
-SERVER_HOST = "192.168.56.106"
+SERVER_HOST = "192.168.56.105"
 SERVER_PORT = 8888 # server's port
 separator_token = "<SEP>" # we will use this to separate the client name & message
 end = 0
@@ -32,6 +32,7 @@ print(f"[*] Connecting to {SERVER_HOST}:{SERVER_PORT}...")
 # connect to the server
 s.connect((SERVER_HOST, SERVER_PORT))
 print("[+] Connected.")
+print("\n---------- HELLO PLAYER!! WELCOME TO NO-FEAR GAME ----------")
 # prompt the client for a name
 #name = input("Enter your name: ")
 def winner():
