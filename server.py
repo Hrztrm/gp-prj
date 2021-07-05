@@ -3,7 +3,7 @@ from threading import Thread
 import random
 
 # server's IP address
-SERVER_HOST = "192.168.56.105"
+SERVER_HOST = "192.168.56.106"
 SERVER_PORT = 8888 # port we want to use
 separator_token = "<SEP>" # we will use this to separate the client name & message
 
@@ -71,37 +71,6 @@ def stoa(msg):
     for cs in all_cs:
         cs.send(msg.encode())
 
-"""
-def adventure(cs):
-    menu(cs)
-    while True:
-        try:
-            # keep listening for a message from `cs` socket
-            msg = cs.recv(1024).decode()
-            
-        except Exception as e:
-            print(f"[!] Error: {e}")
-            all_cs.remove(cs)
-        # iterate over all connected sockets
-        for client_socket in all_cs:
-            if msg == "stat":
-                client_socket.send(pl[0].p_stat().encode())
-            if msg == "magic":
-                client_socket.send(pl[1].m_list().encode())
-                msg = cs.recv(1024).decode()
-            if msg == "a":
-                client_socket.send(pl[0].p_stat().encode())
-                #if msg == "1":
-                    #Damage definiontn
-                #elif msg == "2":
-                    #dmg
-                #elif msg == "3":
-                    #stuff
-                #elif msg == "5"
-                    #back
-                #    continue
-"""
-
 class adv:
     def __init__(self, cl, stren, agil, intel):
         self.cl = cl
@@ -160,7 +129,7 @@ class adv:
     def analyze(self):
         self.insight = 1
 
-    def deal_dmg(self):
+    def deal_dmg(self): #Dealing damage
         if self.cl == "Warrior":
             dmg = self.stren
         elif self.cl == "Archer":
@@ -169,7 +138,7 @@ class adv:
             dmg = self.intel
         return dmg
 
-    def warping(self, targ):
+    def warping(self, targ): #Minus stat
         if targ == "1":
             print("Warping strength")
             self.stren -= 2
@@ -225,6 +194,7 @@ def w_room():
         if player == 1:
             pl1 = client_socket
             print("player 1")
+            sto1(pl1, "Player 1 has entered")
             pl.append(adv("Warrior", 10, 5, 3)) #Should be changed with random class
         elif player == 2:
             pl2 = client_socket
@@ -428,16 +398,16 @@ def sac_room():
     #sto1(pl2, "Sac room. 1 or 2")
     if not pl[0].dead:
         com1 = pl1.recv(1024).decode()
-            if com1 == "1":
-                pl[0].sac()
-                pl[1].take_dmg(10)
-                death_check()
+        if com1 == "1":
+            pl[0].sac()
+            pl[1].take_dmg(10)
+            death_check()
     if not pl[1].dead:
         com2 = pl2.recv(1024).decode()
-            if com1 == "1":
-                pl[1].sac()
-                pl[0].take_dmg(10)
-                death_check()
+        if com1 == "1":
+            pl[1].sac()
+            pl[0].take_dmg(10)
+            death_check()
 
 def rec_room():
     print("Recovery Room")
@@ -448,20 +418,20 @@ def rec_room():
     #sto1(pl2, "1 singel heal\n2 all heal")
     if not pl[0].dead:
         com1 = pl1.recv(1024).decode()
-            if com1 == "1":
-                sto1(pl1, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
-                h1 = pl1.recv(1024).decode()
-                print(f"h1: {h1}")
-            else:
-                com1 = "2"
+        if com1 == "1":
+            sto1(pl1, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
+            h1 = pl1.recv(1024).decode()
+            print(f"h1: {h1}")
+        else:
+            com1 = "2"
     if not pl[1].dead:
         com2 = pl2.recv(1024).decode()
-            if com2 == "1":
-                sto1(pl2, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
-                h2 = pl2.recv(1024).decode()
-                print(f"h2: {h2}")
-            else:
-                com2 = "2"
+        if com2 == "1":
+            sto1(pl2, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
+            h2 = pl2.recv(1024).decode()
+            print(f"h2: {h2}")
+        else:
+            com2 = "2"
     if pl[0].dead:
         com1 = com2
         h1 = h2
@@ -496,8 +466,6 @@ def endprog():
 
 w_room()
 n_enc = 0
-print(pl1)
-print(pl2)
 
 #story("start")
 while n_enc <= 5:
