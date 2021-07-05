@@ -5,6 +5,7 @@ from datetime import datetime
 from colorama import Fore, init, Back
 import time
 import sys
+from os import system, name
 # init colors
 init()
 
@@ -39,7 +40,6 @@ def winner():
     print("\n\n" + message)
     global end
     end = 1
-    sys.exit("Game End")
 
 def dead():
     print("\nWith the final breath, breathed. You fell to the floor in anger and sadness. Hopefully in the next life, you shall emerge victorious")
@@ -47,7 +47,6 @@ def dead():
     print("\n\n" + message)
     global end
     end = 1
-    sys.exit("Game End")
 
 def listen_for_messages():
     while True:
@@ -64,10 +63,11 @@ def listen_for_messages():
 def send_message(s):
     while True:
         msg = input("Command: ")
+        system('clear')
         if msg.lower() == 'q':
             break
         s.send(msg.encode())
-        time.sleep(0.02)
+        time.sleep(0.05)
     global end
     end = 1
 
