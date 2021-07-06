@@ -3,7 +3,7 @@ from threading import Thread
 import random
 
 # server's IP address
-SERVER_HOST = "192.168.56.106"
+SERVER_HOST = "192.168.56.105"
 SERVER_PORT = 8888
 all_cs = set()
 pl = []
@@ -18,7 +18,7 @@ intro = "tes test test" #needs changing
 print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
 print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-menu = "\n!! Make your move NOW !! \n1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Wait\n\n"
+menu = "\n!! Make your move NOW !! \n1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Heal\n6. Wait\n\n"
 death_count = 0
 class enemy:
     def __init__(self, typ, stren, agil, intel):
@@ -237,12 +237,12 @@ def death_check():
             pl[i].death()
             death_count += 1
             if i == 0:
-                sto1(pl1, "died")
+                sto1(pl1, "died\n")
                 sto1(pl1, "Hint: ")
                 sto1(pl1, random.choice(hints))
                 sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
             elif i == 1:
-                sto1(pl2, "died")
+                sto1(pl2, "died\n")
                 sto1(pl2, "Hint: ")
                 sto1(pl2, random.choice(hints))
                 sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
@@ -427,9 +427,9 @@ def battle():
 def sac_room():
     print("Sacrifical Room")
     if not pl[0].dead:
-        sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for gre                                                                                                             ater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+        sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
     if not pl[1].dead:
-        sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for gre                                                                                                             ater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+        sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
     if not pl[0].dead:
         if not pl[1].dead:
             sto1(pl2, "Waiting for player 1")
@@ -452,9 +452,9 @@ def sac_room():
 def rec_room():
     print("Recovery Room")
     if not pl[0].dead:
-        sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contr                                                                                                             ast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+        sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
     if not pl[1].dead:
-        sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contr                                                                                                             ast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+        sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
     if not pl[0].dead:
         if not pl[1].dead:
             sto1(pl2, "Waiting for player 1")
