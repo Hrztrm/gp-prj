@@ -4,20 +4,14 @@ import random
 
 # server's IP address
 SERVER_HOST = "192.168.56.106"
-SERVER_PORT = 8888 # port we want to use
-separator_token = "<SEP>" # we will use this to separate the client name & message
-
-# initialize list/set of all connected client's sockets
+SERVER_PORT = 8888
 all_cs = set()
 pl = []
 l_enemy = ["Goblin", "Kobold", "Orc"]
-# create a TCP socket
 s = socket.socket()
 # make the port as reusable port
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-# bind the socket to the address we specified
 s.bind((SERVER_HOST, SERVER_PORT))
-# listen for upcoming connections
 s.listen(5)
 intro = "tes test test" #needs changing
 print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
@@ -186,10 +180,8 @@ def w_room():
     global pl2
     player = 1
     while player != 3:
-    #while True:
         client_socket, client_address = s.accept()
         print(f"[+] {client_address} connected.\n---------------------------------------------------")
-        # add the new connected client to connected sockets
         all_cs.add(client_socket)
         if player == 1:
             pl1 = client_socket
@@ -203,13 +195,6 @@ def w_room():
             pl1.send(msg.encode())
             pl.append(adv("Archer", 5, 10, 3)) #Also changed with random class
         player+=1
-
-    # start a new thread that listens for each client's messages
-        #t = Thread(target=create_player, args=(client_socket,len(all_cs)))
-    # make the thread daemon so it ends whenever the main thread ends
-        #t.daemon = True
-    # start the thread
-        #t.start()
 
 def select(play):
     norm = f"1. Player 1: {pl[0].cond()}\n2. Player 2: {pl[1].cond()}\n3. {enemy1.typ}: {enemy1.cond()}\n\n5. Back"
@@ -259,16 +244,24 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
         act = "0"
         while act != "1" and act != "2" and act != "3" and act != "4" and act != "5":
             if play == 0:
-                sto1(pl2, "Waiting for Player 1 to finish turn")
-                hidden(pll[play].insight, pl1)
+                if not pl[1].dead:
+                    sto1(pl2, "Waiting for Player 1 to finish turn")
+                if enemy1.c_hp <= 0:
+                    break
+                hidden(pl[play].insight, pl1)
                 sto1(pl1, pl[play].p_stat() + "\n\n")
                 sto1(pl1, menu)
+                sto1(pl1, "\n\nCommand: ")
                 act = pl1.recv(1024).decode()
             elif play == 1:
-                sto1(pl1, "Waiting for Player 2 to finish turn")
+                if not pl[0].dead:
+                    sto1(pl1, "Waiting for Player 2 to finish turn")
+                if enemy1.c_hp <= 0:
+                    break
                 hidden(pl[play].insight, pl2)
                 sto1(pl2, pl[play].p_stat() + "\n\n")
                 sto1(pl2, menu)
+                sto1(pl2, "\n\nCommand: ")
                 act = pl2.recv(1024).decode()
 
         if act == "1":
@@ -395,14 +388,19 @@ def sac_room():
         sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
     if not pl[1].dead:
         sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
-    #sto1(pl2, "Sac room. 1 or 2")
     if not pl[0].dead:
+        if not pl[1].dead:
+            sto1(pl2, "Waiting for player 1")
+        sto1(pl1, "\n\nCommand: ")
         com1 = pl1.recv(1024).decode()
         if com1 == "1":
             pl[0].sac()
             pl[1].take_dmg(10)
             death_check()
     if not pl[1].dead:
+        if not pl[0].dead:
+            sto1(pl1, "Waiting for player 2")
+        sto1(pl2, "\n\nCommand: ")
         com2 = pl2.recv(1024).decode()
         if com1 == "1":
             pl[1].sac()
@@ -415,8 +413,10 @@ def rec_room():
         sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
     if not pl[1].dead:
         sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
-    #sto1(pl2, "1 singel heal\n2 all heal")
     if not pl[0].dead:
+        if not pl[1].dead:
+            sto1(pl2, "Waiting for player 1")
+        sto1(pl1, "\n\nCommand: ")
         com1 = pl1.recv(1024).decode()
         if com1 == "1":
             sto1(pl1, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
@@ -425,6 +425,9 @@ def rec_room():
         else:
             com1 = "2"
     if not pl[1].dead:
+        if not pl[1].dead:
+            sto1(pl2, "Waiting for player 1")
+        sto1(pl2, "\n\nCommand: ")
         com2 = pl2.recv(1024).decode()
         if com2 == "1":
             sto1(pl2, "Who Shall be healed?\n\n1. Player 1\n2. Player 2")
@@ -476,8 +479,14 @@ while n_enc <= 5:
         rec_room()
     else:
         battle()
-
-
+i = 0
+for cd in all_cs:
+    if not pl[i].dead:
+        if i == 0:
+            sto1(pl1, "win")
+        else:
+            sto1(pl2, "win")
+    i += 1
 # close client sockets
 for cs in all_cs:
     cs.close()
