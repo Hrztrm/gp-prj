@@ -1,6 +1,7 @@
 import socket
 from threading import Thread
 import sys
+import time
 from os import system, name
 
 SERVER_HOST = "192.168.56.105"
@@ -15,7 +16,7 @@ print("\n---------- HELLO PLAYER!! WELCOME TO NO-FEAR GAME ----------\n---- The 
 print("\n\t****** PLAY TO WIN, BUT ENJOY THE FUN ******")
 
 def winner():
-    print("\nWith the final encouter, encountered. You left the place with a code in hand. Waiting eagerly for the next adventure to come.\n")
+    print("\nWith the final encouter, encountered. You left the place with a code in hand.\nWaiting eagerly for the next adventure to come.\n")
     message = s.recv(1024).decode()
     print("\n\n" + message)
     global end
