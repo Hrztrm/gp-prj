@@ -7,19 +7,19 @@ SERVER_HOST = "192.168.56.106"
 SERVER_PORT = 8888
 all_cs = set()
 pl = []
-l_enemy = ["Goblin", "Kobolod", "Orc"]
+l_enemy = ["Goblin", "Kobold", "Orc"]
 s = socket.socket()
-hints = ["The orc attacks the buffest character first", "When fighting with a kobold, you can only pray", "Goblin is smart. Weakest looking enemy will die first", "Be wary with the altar, young adventurer. For it can cause demise unknowingly.", "Unify your answers when faced with a statue, only then rewards will be reaped.", "Warping. The act of self degrading. In dire times, you can warp yourself in the hopes that the enemy does not target you."]
-# make the port as reusable port
+hints = ["The orc attacks the buffest character first", "When fighting with a kobold, you can only pray", "Goblin is smart. Weak looking enemy will die first", "Be wary with the altar, young adventurer. For it can cause demise unknowingly.", "Unify your answers when faced with a statue, only then rewards will be reaped.", "Warping. The act of self degrading. In dire times, you can warp yourself in the hopes that the enemy does not target you."]
+# Make port as reusable port
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SERVER_HOST, SERVER_PORT))
-s.listen(2)
+s.listen(5)
+intro = "tes test test" #needs changing
 print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
 print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-menu = "1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Heal\n6. Wait\n\n"
+menu = "\n!! Make your move NOW !! \n1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Wait\n\n"
 death_count = 0
-
 class enemy:
     def __init__(self, typ, stren, agil, intel):
         self.typ = typ
@@ -58,12 +58,12 @@ class enemy:
         elif self.typ == "Goblin":
             dmg = self.intel
         return dmg
-
+    
     def heal(self, h):
         self.c_hp += h
         if self.c_hp > self.m_hp:
             self.c_hp = self.m_hp
-
+            
 def sto1(cs, msg):
     cs.send(msg.encode())
 
@@ -163,11 +163,11 @@ class adv:
 def warp(player):
     if player == 0:
         sto1(pl1, pl[player].p_stat())
-        sto1(pl1, "Warp which stat?\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
+        sto1(pl1, "\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
         return pl1.recv(1024).decode()
     elif player == 1:
         sto1(pl2, pl[player].p_stat())
-        sto1(pl2, "Warp which stat?\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
+        sto1(pl2, "\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
         return pl2.recv(1024).decode()
 
 def w_room():
@@ -188,7 +188,7 @@ def w_room():
             stren = 3
             agil = 5
             intel = 10
-
+            
         client_socket, client_address = s.accept()
         print(f"[+] {client_address} connected.\n---------------------------------------------------")
         all_cs.add(client_socket)
@@ -238,7 +238,7 @@ def death_check():
             death_count += 1
             if i == 0:
                 sto1(pl1, "died")
-                sto1(pl1, "Hint")
+                sto1(pl1, "Hint: ")
                 sto1(pl1, random.choice(hints))
                 sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
             elif i == 1:
@@ -297,7 +297,7 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
                     break
             else:
                 break
-        
+
         if dc == 1:
             break
 
@@ -356,22 +356,22 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
         elif act == "5":
             targ = select(play)
             if targ == "1":
-                pl[0].heal(5)
+                pl[0].heal(3)
             elif targ == "2":
-                pl[1].heal(5)
+                pl[1].heal(3)
             elif targ == "3":
-                enemy1.heal(5)
+                enemy1.heal(3)
             elif targ == "5":
                 continue
             break
-    
+
         elif act == "6":
             print("Wait")
             break
 
     death_check()
 
-def battle(boss):
+def battle():
     play = 0
     if not pl[0].dead:
         sto1(pl1, "\nYou have encountered an enemy, prepare for BATTLE.\n")
@@ -379,10 +379,8 @@ def battle(boss):
         sto1(pl2, "\nYou have encountered an enemy, prepare for BATTLE.\n")
     global enemy1
     global death_count
-    if boss == 0:
-        enemy1 = enemy(random.choice(l_enemy), random.randint(5,10), random.randint(5,10), random.randint(5,10))
-    #elif boss == 1:
-        #enemy1 = enemy( #Boss stats
+    enemy1 = enemy(random.choice(l_enemy), random.randint(5,10), random.randint(5,10), random.randint(5,10))
+    print("Created enemy\n" + enemy1.p_stat())
     while enemy1.c_hp > 0: #Fight until enemy dies
         if pl[0].agil >= pl[1].agil: #Player 1 then player 2
             if not pl[0].dead:
@@ -397,7 +395,7 @@ def battle(boss):
         if enemy1.c_hp > 0: #Enemy's Turn
             if enemy1.typ == "Goblin":
                 if pl[0].intel >= pl[1].intel and not pl[1].dead:
-                    pl[1].take_dmg(enemy1.deal_dmg())
+                    pl[0].take_dmg(enemy1.deal_dmg())
                 else:
                     pl[0].take_dmg(enemy1.deal_dmg())
             elif enemy1.typ == "Orc":
@@ -429,9 +427,9 @@ def battle(boss):
 def sac_room():
     print("Sacrifical Room")
     if not pl[0].dead:
-        sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+        sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for gre                                                                                                             ater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
     if not pl[1].dead:
-        sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+        sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for gre                                                                                                             ater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
     if not pl[0].dead:
         if not pl[1].dead:
             sto1(pl2, "Waiting for player 1")
@@ -454,9 +452,9 @@ def sac_room():
 def rec_room():
     print("Recovery Room")
     if not pl[0].dead:
-        sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+        sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contr                                                                                                             ast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
     if not pl[1].dead:
-        sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+        sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contr                                                                                                             ast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
     if not pl[0].dead:
         if not pl[1].dead:
             sto1(pl2, "Waiting for player 1")
@@ -505,7 +503,7 @@ def rec_room():
 def endprog():
     global death_count
     if death_count == 2:
-        print("Both players has died")
+        print("!!ATTENTION!! Both players has died")
         for cs in all_cs:
             cs.close()
         s.close()
@@ -521,9 +519,8 @@ while n_enc <= 5:
     elif n_enc == 5:
         rec_room()
     else:
-        battle(0)
+        battle()
 
-battle(1)
 i = 0
 for cd in all_cs:
     if not pl[i].dead:
