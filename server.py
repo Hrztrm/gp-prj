@@ -13,8 +13,7 @@ hints = ["The orc attacks the buffest character first", "When fighting with a ko
 # Make port as reusable port
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SERVER_HOST, SERVER_PORT))
-s.listen(5)
-intro = "tes test test" #needs changing
+s.listen(2)
 print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
 print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
