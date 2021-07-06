@@ -3,7 +3,7 @@ from threading import Thread
 import random
 
 # server's IP address
-SERVER_HOST = "192.168.56.106"
+SERVER_HOST = "192.168.56.105"
 SERVER_PORT = 8888
 all_cs = set()
 pl = []
@@ -18,7 +18,7 @@ intro = "tes test test" #needs changing
 print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
 print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-menu = "1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Wait\n\n"
+menu = "\nMake your move NOW!! \n1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Wait\n\n"
 death_count = 0
 class enemy:
     def __init__(self, typ, stren, agil, intel):
@@ -222,12 +222,12 @@ def death_check():
             death_count += 1
             if i == 0:
                 sto1(pl1, "died")
-                sto1(pl1, "Hint")
+                sto1(pl1, "Hint: ")
                 sto1(pl1, random.choice(hints))
                 sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
             elif i == 1:
                 sto1(pl2, "died")
-                sto1(pl2, "Hint")
+                sto1(pl2, "Hint: ")
                 sto1(pl2, random.choice(hints))
                 sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
         i += 1
@@ -248,7 +248,7 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
         while act != "1" and act != "2" and act != "3" and act != "4" and act != "5":
             if play == 0:
                 if not pl[1].dead:
-                    sto1(pl2, "Waiting for Player 1 to finish turn")
+                    sto1(pl2, "\nWaiting for Player 1 to finish turn")
                 hidden(pl[play].insight, pl1)
                 sto1(pl1, pl[play].p_stat() + "\n\n")
                 sto1(pl1, menu)
@@ -256,7 +256,7 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
                 act = pl1.recv(1024).decode()
             elif play == 1:
                 if not pl[0].dead:
-                    sto1(pl1, "Waiting for Player 2 to finish turn")
+                    sto1(pl1, "\nWaiting for Player 2 to finish turn")
                 hidden(pl[play].insight, pl2)
                 sto1(pl2, pl[play].p_stat() + "\n\n")
                 sto1(pl2, menu)
@@ -331,9 +331,9 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
 def battle():
     play = 0
     if not pl[0].dead:
-        sto1(pl1, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
+        sto1(pl1, "\nYou have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
     if not pl[1].dead:
-        sto1(pl2, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
+        sto1(pl2, "\nYou have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
     global enemy1
     global death_count
     enemy1 = enemy(random.choice(l_enemy), random.randint(1,2), random.randint(5,10), random.randint(5,10))
@@ -460,7 +460,7 @@ def rec_room():
 def endprog():
     global death_count
     if death_count == 2:
-        print("Both players has died")
+        print("!!ATTENTION!! Both players has died")
         for cs in all_cs:
             cs.close()
         s.close()
