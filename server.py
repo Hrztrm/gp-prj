@@ -7,19 +7,19 @@ SERVER_HOST = "192.168.56.106"
 SERVER_PORT = 8888
 all_cs = set()
 pl = []
-l_enemy = ["Goblin", "Kobold", "Orc"]
+l_enemy = ["Goblin", "Kobolod", "Orc"]
 s = socket.socket()
-hints = ["The orc attacks the buffest character first", "When fighting with a kobold, you can only pray", "Goblin is smart. Weak looking enemy will die first", "Be wary with the altar, young adventurer. For it can cause demise unknowingly.", "Unify your answers when faced with a statue, only then rewards will be reaped.", "Warping. The act of self degrading. In dire times, you can warp yourself in the hopes that the enemy does not target you."]
+hints = ["The orc attacks the buffest character first", "When fighting with a kobold, you can only pray", "Goblin is smart. Weakest looking enemy will die first", "Be wary with the altar, young adventurer. For it can cause demise unknowingly.", "Unify your answers when faced with a statue, only then rewards will be reaped.", "Warping. The act of self degrading. In dire times, you can warp yourself in the hopes that the enemy does not target you."]
 # make the port as reusable port
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SERVER_HOST, SERVER_PORT))
-s.listen(5)
-intro = "tes test test" #needs changing
+s.listen(2)
 print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
 print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
-menu = "1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Wait\n\n"
+menu = "1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Heal\n6. Wait\n\n"
 death_count = 0
+
 class enemy:
     def __init__(self, typ, stren, agil, intel):
         self.typ = typ
@@ -59,6 +59,11 @@ class enemy:
             dmg = self.intel
         return dmg
 
+    def heal(self, h):
+        self.c_hp += h
+        if self.c_hp > self.m_hp:
+            self.c_hp = self.m_hp
+
 def sto1(cs, msg):
     cs.send(msg.encode())
 
@@ -69,25 +74,23 @@ def stoa(msg):
 class adv:
     def __init__(self, cl, stren, agil, intel):
         self.cl = cl
-        if cl == "Warrior":
-            self.c_hp = stren + 10
-            self.m_hp = stren + 10
-        elif cl == "Archer":
-            self.c_hp = stren + 5
-            self.m_hp = stren + 5
-        elif cl == "Mage":
-            self.c_hp = stren
-            self.m_hp = stren
+        #if cl == "Warrior":   #Not used because it will be unfair to people who got mage, which have the worst hp = one shot killed by everything
+        #    self.c_hp = stren + 10
+        #    self.m_hp = stren + 10
+        #elif cl == "Archer":
+        #    self.c_hp = stren + 5
+        #    self.m_hp = stren + 5
+        #elif cl == "Mage":
+        #    self.c_hp = stren
+        #    self.m_hp = stren
+        self.c_hp = 20
+        self.m_hp = 20
         self.stren = stren
         self.agil = agil
         self.intel = intel
         self.dead = 0
         self.dmg_taken = 1
         self.insight = 0
-        if (cl == "Mage"):
-            self.spell = ["Magic Bolt", "Mind Shock", "Heal"]
-        elif (cl == "Warrior" or cl == "Archer"):
-            self.spell = [" ", " ", " "]
 
     def p_health(self):
         return f"Health {self.c_hp}/{self.m_hp}"
@@ -98,9 +101,6 @@ class adv:
 
     def p_stat(self):
         return f"Class: {self.cl}\nHealth: {self.c_hp}/{self.m_hp}\nStrength: {self.stren}\nAgility: {self.agil}\nIntelligence: {self.intel}"
-
-    def m_list(self):
-        return f"Magic\n1. {self.spell[0]}\n2. {self.spell[1]}\n3. {self.spell[2]}\n\n5. Back"
 
     def cond(self):
         if self.c_hp >= self.m_hp * 3/4:
@@ -115,7 +115,7 @@ class adv:
             return f"Dead"
 
     def death(self):
-        self.m_hp = 0
+        self.c_hp = 0
         self.stren = 0
         self.agil = 0
         self.intel = 0
@@ -160,20 +160,14 @@ class adv:
         if self.c_hp > self.m_hp:
             self.c_hp = self.m_hp
 
-def story(part):
-    if part == "start":
-        for cs in all_cs:
-            cs.send(intro.encode())
-
-
 def warp(player):
     if player == 0:
         sto1(pl1, pl[player].p_stat())
-        sto1(pl1, "\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
+        sto1(pl1, "Warp which stat?\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
         return pl1.recv(1024).decode()
     elif player == 1:
         sto1(pl2, pl[player].p_stat())
-        sto1(pl2, "\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
+        sto1(pl2, "Warp which stat?\n1. Strength\n2. Agility\n3. Intelligence\n\n5. Back")
         return pl2.recv(1024).decode()
 
 def w_room():
@@ -181,6 +175,20 @@ def w_room():
     global pl2
     player = 1
     while player != 3:
+        clas = random.choice(["Warrior", "Archer", "Mage"])
+        if clas == "Warrior":
+            stren = 10
+            agil = 5
+            intel = 3
+        elif clas == "Archer":
+            stren = 5
+            agil = 10
+            intel = 3
+        elif clas == "Mage":
+            stren = 3
+            agil = 5
+            intel = 10
+
         client_socket, client_address = s.accept()
         print(f"[+] {client_address} connected.\n---------------------------------------------------")
         all_cs.add(client_socket)
@@ -188,13 +196,13 @@ def w_room():
             pl1 = client_socket
             print("player 1")
             sto1(pl1, "Player 1 has entered")
-            pl.append(adv("Warrior", 10, 5, 3)) #Should be changed with random class
+            pl.append(adv(clas, stren, agil, intel))
         elif player == 2:
             pl2 = client_socket
             print("player 2")
             msg = "Player 2 has joined"
             pl1.send(msg.encode())
-            pl.append(adv("Archer", 5, 10, 3)) #Also changed with random class
+            pl.append(adv(clas, stren, agil, intel))
         player+=1
 
 def select(play):
@@ -202,22 +210,30 @@ def select(play):
     hide = f"1. Player 1: {pl[0].cond()}\n2. Player 2: {pl[1].cond()}\n3. Hidden: {enemy1.cond()}\n\n5. Back"
     if play == 0:
         if pl[play].insight == 0:
-            sto1(pl1, hide)
+            sto1(pl1, hide + "\nWho?")
         else:
-            sto1(pl1, norm)
+            sto1(pl1, norm + "\nWho?")
         return pl1.recv(1024).decode()
     elif play == 1:
         if pl[play].insight == 0:
-            sto1(pl2, hide)
+            sto1(pl2, hide + "\nWho?")
         else:
-            sto1(pl2, norm)
+            sto1(pl2, norm + "\nWho?")
         return pl2.recv(1024).decode()
 
 def death_check():
     global death_count
     i = 0
+
+    death_count = 0
     for check in pl:
-        if pl[i].c_hp <= 0 and pl[i].dead == 0:
+        if pl[i].dead == 1:
+            death_count += 1
+        i += 1
+
+    i = 0
+    for check in pl:
+        if (pl[i].c_hp <= 0 or pl[i].stren <= 0) and pl[i].dead == 0:
             pl[i].death()
             death_count += 1
             if i == 0:
@@ -227,11 +243,11 @@ def death_check():
                 sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
             elif i == 1:
                 sto1(pl2, "died")
-                sto1(pl2, "Hint")
+                sto1(pl2, "Hint: ")
                 sto1(pl2, random.choice(hints))
                 sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
         i += 1
-    if death_count == 2:
+    if death_count >= 2:
         endprog()
 
 def hidden(hid ,player):
@@ -244,24 +260,46 @@ def hidden(hid ,player):
 
 def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
     while True:
+        dc = 0
         act = "0"
-        while act != "1" and act != "2" and act != "3" and act != "4" and act != "5":
-            if play == 0:
-                if not pl[1].dead:
-                    sto1(pl2, "Waiting for Player 1 to finish turn")
-                hidden(pl[play].insight, pl1)
-                sto1(pl1, pl[play].p_stat() + "\n\n")
-                sto1(pl1, menu)
-                sto1(pl1, "\n\nCommand: ")
-                act = pl1.recv(1024).decode()
-            elif play == 1:
-                if not pl[0].dead:
-                    sto1(pl1, "Waiting for Player 2 to finish turn")
-                hidden(pl[play].insight, pl2)
-                sto1(pl2, pl[play].p_stat() + "\n\n")
-                sto1(pl2, menu)
-                sto1(pl2, "\n\nCommand: ")
-                act = pl2.recv(1024).decode()
+        while act != "1" and act != "2" and act != "3" and act != "4" and act != "5" and act != "6":
+            act = "0"
+            if play == 0 and not pl[0].dead:
+                try:
+                    if not pl[1].dead and dc != 1:
+                        sto1(pl2, "Waiting for Player 1 to finish turn")
+                    hidden(pl[play].insight, pl1)
+                    sto1(pl1, pl[play].p_stat() + "\n\n")
+                    sto1(pl1, menu)
+                    sto1(pl1, "\n\nCommand: ")
+                    act = pl1.recv(1024).decode()
+                except:
+                    print("Player 1 has dc")
+                    sto1(pl2, "Player 1 has disconnected")
+                    pl[0].death()
+                    dc = 1
+                    break
+
+            elif play == 1 and not pl[1].dead:
+                try:
+                    if not pl[0].dead and dc != 1:
+                        sto1(pl1, "Waiting for Player 2 to finish turn")
+                    hidden(pl[play].insight, pl2)
+                    sto1(pl2, pl[play].p_stat() + "\n\n")
+                    sto1(pl2, menu)
+                    sto1(pl2, "\n\nCommand: ")
+                    act = pl2.recv(1024).decode()
+                except:
+                    print("Player 2 has dc")
+                    sto1(pl1, "Player 2 has disconnected")
+                    pl[1].death()
+                    dc = 1
+                    break
+            else:
+                break
+        
+        if dc == 1:
+            break
 
         if act == "1":
             print("Attacking")
@@ -316,28 +354,35 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
                 break
 
         elif act == "5":
+            targ = select(play)
+            if targ == "1":
+                pl[0].heal(5)
+            elif targ == "2":
+                pl[1].heal(5)
+            elif targ == "3":
+                enemy1.heal(5)
+            elif targ == "5":
+                continue
+            break
+    
+        elif act == "6":
             print("Wait")
             break
 
     death_check()
-    print("\n")
-    print(enemy1.p_stat())
-    print("\n")
-    print(pl[1].p_stat())
-    print("\n")
-    print(pl[0].p_stat())
-    print("\n")
 
-def battle():
+def battle(boss):
     play = 0
     if not pl[0].dead:
-        sto1(pl1, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
+        sto1(pl1, "\nYou have encountered an enemy, prepare for BATTLE.\n")
     if not pl[1].dead:
-        sto1(pl2, "You have encountered an enemy, prepare for BATTLE.\n") #Change to stoa
+        sto1(pl2, "\nYou have encountered an enemy, prepare for BATTLE.\n")
     global enemy1
     global death_count
-    enemy1 = enemy(random.choice(l_enemy), random.randint(1,2), random.randint(5,10), random.randint(5,10))
-    print(enemy1.p_stat())
+    if boss == 0:
+        enemy1 = enemy(random.choice(l_enemy), random.randint(5,10), random.randint(5,10), random.randint(5,10))
+    #elif boss == 1:
+        #enemy1 = enemy( #Boss stats
     while enemy1.c_hp > 0: #Fight until enemy dies
         if pl[0].agil >= pl[1].agil: #Player 1 then player 2
             if not pl[0].dead:
@@ -351,7 +396,7 @@ def battle():
                 turn(0)
         if enemy1.c_hp > 0: #Enemy's Turn
             if enemy1.typ == "Goblin":
-                if pl[0].stren >= pl[1].stren and not pl[1].dead:
+                if pl[0].intel >= pl[1].intel and not pl[1].dead:
                     pl[1].take_dmg(enemy1.deal_dmg())
                 else:
                     pl[0].take_dmg(enemy1.deal_dmg())
@@ -366,11 +411,11 @@ def battle():
                 hit = random.randint(0,1)
                 pl[hit].take_dmg(enemy1.deal_dmg())
         print("\n")
-        print(pl[0].p_stat())
+        print("Player 1 stats\n" + pl[0].p_stat())
         print("\n")
-        print(pl[1].p_stat())
+        print("Player 2 stats\n" + pl[1].p_stat())
         print("\n")
-        print(enemy1.p_stat())
+        print("Enemy stats\n" + enemy1.p_stat())
         print("\n")
         i = 0
         for check in pl:
@@ -401,7 +446,7 @@ def sac_room():
             sto1(pl1, "Waiting for player 2")
         sto1(pl2, "\n\nCommand: ")
         com2 = pl2.recv(1024).decode()
-        if com1 == "1":
+        if com2 == "1":
             pl[1].sac()
             pl[0].take_dmg(10)
             death_check()
@@ -469,7 +514,6 @@ def endprog():
 w_room()
 n_enc = 0
 
-#story("start")
 while n_enc <= 5:
     n_enc += 1
     if n_enc == 3:
@@ -477,7 +521,9 @@ while n_enc <= 5:
     elif n_enc == 5:
         rec_room()
     else:
-        battle()
+        battle(0)
+
+battle(1)
 i = 0
 for cd in all_cs:
     if not pl[i].dead:
@@ -486,8 +532,7 @@ for cd in all_cs:
         else:
             sto1(pl2, "win")
     i += 1
-# close client sockets
+
 for cs in all_cs:
     cs.close()
-# close server socket
 s.close()
