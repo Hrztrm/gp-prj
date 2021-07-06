@@ -1,6 +1,7 @@
 import socket
 from threading import Thread
 import sys
+import time
 from os import system, name
 
 SERVER_HOST = "192.168.56.105"
