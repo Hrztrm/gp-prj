@@ -9,6 +9,7 @@ all_cs = set()
 pl = []
 l_enemy = ["Goblin", "Kobold", "Orc"]
 s = socket.socket()
+hints = ["The orc attacks the buffest character first", "When fighting with a kobold, you can only pray", "Goblin is smart. Weak looking enemy will die first", "Be wary with the altar, young adventurer. For it can cause demise unknowingly.", "Unify your answers when faced with a statue, only then rewards will be reaped.", "Warping. The act of self degrading. In dire times, you can warp yourself in the hopes that the enemy does not target you."]
 # make the port as reusable port
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SERVER_HOST, SERVER_PORT))
@@ -221,11 +222,13 @@ def death_check():
             death_count += 1
             if i == 0:
                 sto1(pl1, "died")
-                sto1(pl1, "no hint yet")
+                sto1(pl1, "Hint")
+                sto1(pl1, random.choice(hints))
                 sto1(pl2, f"Player 1 has died while fighting {enemy1.typ}\n")
             elif i == 1:
                 sto1(pl2, "died")
-                sto1(pl2, "no hint yet")
+                sto1(pl2, "Hint")
+                sto1(pl2, random.choice(hints))
                 sto1(pl1, f"Player 2 has died while fighting {enemy1.typ}'n")
         i += 1
     if death_count == 2:
@@ -246,8 +249,6 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
             if play == 0:
                 if not pl[1].dead:
                     sto1(pl2, "Waiting for Player 1 to finish turn")
-                if enemy1.c_hp <= 0:
-                    break
                 hidden(pl[play].insight, pl1)
                 sto1(pl1, pl[play].p_stat() + "\n\n")
                 sto1(pl1, menu)
@@ -256,8 +257,6 @@ def turn(play): #play = 0 == PLayer 1 turn, play = 1 == Player 2 turn
             elif play == 1:
                 if not pl[0].dead:
                     sto1(pl1, "Waiting for Player 2 to finish turn")
-                if enemy1.c_hp <= 0:
-                    break
                 hidden(pl[play].insight, pl2)
                 sto1(pl2, pl[play].p_stat() + "\n\n")
                 sto1(pl2, menu)
