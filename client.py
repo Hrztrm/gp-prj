@@ -63,10 +63,7 @@ def listen_for_messages():
 
 def send_message(s):
     while True:
-        msg = input("Command: ")
-        system('clear')
-        if msg.lower() == 'q':
-            break
+        msg = input()
         s.send(msg.encode())
         time.sleep(0.05)
     global end
