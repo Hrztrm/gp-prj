@@ -23,7 +23,7 @@ def winner():
     end = 1
 
 def dead():
-    print("\nWith the final breath, breathed. You fell to the floor in anger and sadness. Hopefully in the next life, you shall emerge victorious")
+    print("\nWith the final breath, breathed. You fell to the floor in anger and sadness.\nHopefully in the next life, you shall emerge victorious")
     message = s.recv(1024).decode()
     print("\n\n" + message)
     global end
