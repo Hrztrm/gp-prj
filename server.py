@@ -14,7 +14,6 @@ hints = ["The orc attacks the buffest character first", "When fighting with a ko
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SERVER_HOST, SERVER_PORT))
 s.listen(5)
-intro = "tes test test" #needs changing
 print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
 print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
