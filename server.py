@@ -14,7 +14,7 @@ hints = ["The orc attacks the buffest character first", "When fighting with a ko
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((SERVER_HOST, SERVER_PORT))
 s.listen(2)
-print("\n\t~~~~~~~~~~ Simple Game Server ~~~~~~~~~~ ")
+print("\n\t~~~~~~~~~~ PYTHON MULTIPLAYER GAME ~~~~~~~~~~ ")
 print("---------------------------------------------------")
 print(f"[*] Listening as {SERVER_HOST}:{SERVER_PORT}")
 menu = "\n!! Make your move NOW !! \n1. Attack\n2. Defend\n3. Analyze\n4. Warp\n5. Heal\n6. Wait\n\n"
@@ -451,9 +451,9 @@ def sac_room():
 def rec_room():
     print("Recovery Room")
     if not pl[0].dead:
-        sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+        sto1(pl1, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal\n")
     if not pl[1].dead:
-        sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal")
+        sto1(pl2, "You encountered a room with a statue inside. Carvings on the statues that says \"Answer with unison, fruition shall follow. Answer with contrast, only dust will follow\"\nWhat will you do?\n\n1. Single heal\n2. All heal\n")
     if not pl[0].dead:
         if not pl[1].dead:
             sto1(pl2, "Waiting for player 1")
