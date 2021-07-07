@@ -379,7 +379,7 @@ def battle():
     global enemy1
     global death_count
     enemy1 = enemy(random.choice(l_enemy), random.randint(5,10), random.randint(5,10), random.randint(5,10))
-    print("!!Created enemy!!\n" + enemy1.p_stat())
+    print("\n!!Created enemy!!\n" + enemy1.p_stat())
     while enemy1.c_hp > 0: #Fight until enemy dies
         if pl[0].agil >= pl[1].agil: #Player 1 then player 2
             if not pl[0].dead:
