@@ -426,9 +426,9 @@ def battle():
 def sac_room():
     print("Sacrifical Room")
     if not pl[0].dead:
-        sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+        sto1(pl1, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave\n")
     if not pl[1].dead:
-        sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave")
+        sto1(pl2, "You encountered a room with an altar in the middle. There are carvings on the floor that says \"Sacrifice some of your partner's life for greater power\"\nWhat will you do?\n\n1. Sacrifice\n2. Leave\n")
     if not pl[0].dead:
         if not pl[1].dead:
             sto1(pl2, "Waiting for player 1")
