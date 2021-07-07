@@ -502,7 +502,7 @@ def rec_room():
 def endprog():
     global death_count
     if death_count == 2:
-        print("!!YOU LOSE!! Both players has died")
+        print("!!ATTENTION!! Both players has died!")
         for cs in all_cs:
             cs.close()
         s.close()
