@@ -12,7 +12,7 @@ s = socket.socket()
 print(f"[*] Connecting to {SERVER_HOST}:{SERVER_PORT}...")
 s.connect((SERVER_HOST, SERVER_PORT))
 print("[+] Connected.")
-print("\n---------- HELLO PLAYER!! WELCOME TO NO-FEAR GAME ----------\n---- The game whereas only the brave player will survive----")
+print("\n---------- HELLO PLAYER!! WELCOME TO THE TRIUMPHATOR GAME ----------\n---- The game whereas only the brave player will survive----")
 print("\n\t****** PLAY TO WIN, BUT ENJOY THE FUN ******")
 
 def winner():
